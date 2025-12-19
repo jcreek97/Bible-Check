@@ -1,469 +1,193 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bible Progress (KJV)</title>
-  <style>
-    :root{
-      --bg: #0a0f1f;
-      --panel: rgba(255,255,255,.06);
-      --panel2: rgba(255,255,255,.08);
-      --border: rgba(255,255,255,.10);
-      --text: #eef2ff;
-      --muted: rgba(238,242,255,.72);
-      --muted2: rgba(238,242,255,.55);
-      --accent: #00a3ff;
-      --accent2: rgba(0,163,255,.22);
-      --shadow: 0 18px 45px rgba(0,0,0,.45);
-      --radius: 18px;
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(900px 500px at 20% -10%, rgba(0,163,255,.18), transparent 55%),
-        radial-gradient(800px 500px at 90% 0%, rgba(120,90,255,.16), transparent 55%),
-        var(--bg);
-      color:var(--text);
-    }
-    .wrap{ max-width: 920px; margin: 0 auto; padding: 34px 16px 44px; }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .header{
-      padding: 22px 20px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-    h1{
-      margin:0;
-      font-size: 20px;
-      letter-spacing: .2px;
-      font-weight: 800;
-    }
-    .sub{
-      margin-top: 8px;
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 14px;
-    }
+<style>
+  :root{
+    --bg: #f4efe6;
+    --panel: #fffaf0;
+    --border: #c9bfa9;
+    --text: #1f1f1f;
+    --muted: #5a544a;
+    --accent: #8b1e1e;   /* deep crimson */
+    --accent-soft: #e8c9c9;
+    --shadow: 0 10px 30px rgba(0,0,0,.15);
+    --radius: 14px;
+  }
 
-    .content{ padding: 18px 20px 20px; }
+  *{ box-sizing:border-box; }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.3fr .8fr .8fr;
-      gap: 12px;
-    }
-    @media (max-width: 720px){
-      .grid{ grid-template-columns: 1fr; }
-    }
+  body{
+    margin:0;
+    font-family: "Georgia", "Times New Roman", serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #fffdf8, transparent 60%),
+      var(--bg);
+    color: var(--text);
+  }
 
-    label{
-      display:block;
-      font-size: 12px;
-      color: var(--muted2);
-      margin: 6px 0 8px;
-      letter-spacing: .2px;
-    }
+  .wrap{
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 16px 48px;
+  }
 
-    .select, .btn{
-      width:100%;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.20);
-      color: var(--text);
-      padding: 12px 12px;
-      outline: none;
-      transition: border-color .15s ease, box-shadow .15s ease, transform .05s ease;
-    }
-    .select:focus{
-      border-color: rgba(0,163,255,.55);
-      box-shadow: 0 0 0 3px rgba(0,163,255,.18);
-    }
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
 
-    .actions{
-      display:flex;
-      gap: 10px;
-      align-items: center;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-    .btn{
-      cursor:pointer;
-      font-weight: 800;
-      background: linear-gradient(180deg, rgba(0,163,255,.25), rgba(0,163,255,.12));
-      border-color: rgba(0,163,255,.45);
-    }
-    .btn:hover{ transform: translateY(-1px); }
-    .btn:active{ transform: translateY(0px); }
-    .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+  .header{
+    padding: 24px 22px 18px;
+    border-bottom: 1px solid var(--border);
+  }
 
-    .btn.secondary{
-      background: rgba(255,255,255,.06);
-      border-color: rgba(255,255,255,.14);
-      font-weight: 700;
-    }
+  h1{
+    margin:0;
+    font-size: 22px;
+    letter-spacing: .3px;
+    font-weight: 700;
+  }
 
-    .status{
-      color: var(--muted2);
-      font-size: 13px;
-      margin-left: auto;
-    }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .sub{
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
 
-    .result{
-      margin-top: 16px;
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
-    }
-    .resultTop{
-      display:flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .pct{
-      font-size: 42px;
-      font-weight: 900;
-      letter-spacing: .2px;
-      line-height: 1.05;
-    }
-    .ref{
-      color: var(--muted);
-      font-size: 14px;
-    }
+  .content{ padding: 20px 22px 24px; }
 
-    .barWrap{
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-    .bar{
-      height: 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.10);
-      overflow:hidden;
-    }
-    .bar > div{
-      height:100%;
-      width: 0%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(0,163,255,.95), rgba(120,90,255,.85));
-      transition: width .25s ease;
-    }
-    .stats{
-      margin-top: 10px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    @media (max-width: 720px){
-      .stats{ grid-template-columns: 1fr; }
-    }
-    .stat{
-      padding: 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-    .k{ font-size: 12px; color: var(--muted2); margin-bottom: 6px; }
-    .v{ font-size: 16px; font-weight: 800; color: var(--text); }
+  .grid{
+    display:grid;
+    grid-template-columns: 1.4fr .8fr .8fr;
+    gap: 14px;
+  }
 
-    .foot{
-      margin-top: 14px;
-      font-size: 12px;
-      color: var(--muted2);
-      line-height: 1.45;
-    }
-    a{ color: var(--accent); }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="header">
-        <h1>Bible Progress Calculator <span style="color:rgba(238,242,255,.65); font-weight:800;">(KJV)</span></h1>
-        <div class="sub">
-          Choose the <b>last verse completed</b>. Percentage is computed from <b>word counts</b> (bracketed KJV words included).
-        </div>
-      </div>
+  @media (max-width: 720px){
+    .grid{ grid-template-columns: 1fr; }
+  }
 
-      <div class="content">
-        <div class="grid">
-          <div>
-            <label for="book">Book</label>
-            <select id="book" class="select" disabled>
-              <option>Loading…</option>
-            </select>
-          </div>
-          <div>
-            <label for="chapter">Chapter</label>
-            <select id="chapter" class="select" disabled>
-              <option>Select a book</option>
-            </select>
-          </div>
-          <div>
-            <label for="verse">Verse</label>
-            <select id="verse" class="select" disabled>
-              <option>Select a chapter</option>
-            </select>
-          </div>
-        </div>
+  label{
+    display:block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
 
-        <div class="actions">
-          <button id="calc" class="btn" disabled>Calculate</button>
-          <button id="reset" class="btn secondary" disabled>Reset</button>
-          <div class="status" id="status">Loading data…</div>
-        </div>
+  .select{
+    width:100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-family: inherit;
+    font-size: 15px;
+  }
 
-        <div class="result" id="result" style="display:none;">
-          <div class="resultTop">
-            <div class="pct" id="percent">0.00%</div>
-            <div class="ref" id="detail"></div>
-          </div>
+  .select:focus{
+    outline:none;
+    border-color: var(--accent);
+  }
 
-          <div class="barWrap">
-            <div class="bar"><div id="barFill"></div></div>
-          </div>
+  .actions{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
 
-          <div class="stats">
-            <div class="stat">
-              <div class="k">Words read</div>
-              <div class="v mono" id="wordsRead">0</div>
-            </div>
-            <div class="stat">
-              <div class="k">Words remaining</div>
-              <div class="v mono" id="wordsLeft">0</div>
-            </div>
-            <div class="stat">
-              <div class="k">Total words (dataset)</div>
-              <div class="v mono" id="totalWords">0</div>
-            </div>
-          </div>
+  .btn{
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    cursor:pointer;
+  }
 
-          <div class="foot">
-            If you ever see loading issues, confirm <span class="mono">kjv_word_counts.json</span> sits beside <span class="mono">index.html</span>.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  .btn.secondary{
+    background: #fff;
+    color: var(--accent);
+  }
 
-  <script>
-    const elBook = document.getElementById('book');
-    const elChapter = document.getElementById('chapter');
-    const elVerse = document.getElementById('verse');
-    const elCalc = document.getElementById('calc');
-    const elReset = document.getElementById('reset');
-    const elStatus = document.getElementById('status');
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
 
-    const elResult = document.getElementById('result');
-    const elPercent = document.getElementById('percent');
-    const elDetail = document.getElementById('detail');
-    const elTotalWords = document.getElementById('totalWords');
-    const elWordsRead = document.getElementById('wordsRead');
-    const elWordsLeft = document.getElementById('wordsLeft');
-    const elBarFill = document.getElementById('barFill');
+  .status{
+    margin-left:auto;
+    font-size: 13px;
+    color: var(--muted);
+  }
 
-    let DATA = null;
+  .result{
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fffdf8;
+  }
 
-    function setStatus(msg){ elStatus.textContent = msg; }
+  .pct{
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--accent);
+  }
 
-    function clearSelect(sel, placeholder){
-      sel.innerHTML = '';
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = placeholder;
-      sel.appendChild(opt);
-      sel.value = '';
-    }
+  .ref{
+    margin-top: 6px;
+    font-size: 15px;
+    color: var(--muted);
+  }
 
-    function fillSelect(sel, values, placeholder){
-      clearSelect(sel, placeholder);
-      for(const v of values){
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v;
-        sel.appendChild(opt);
-      }
-    }
+  .bar{
+    margin-top: 14px;
+    height: 10px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    overflow:hidden;
+  }
 
-    function getBooks(){
-      return DATA._order || Object.keys(DATA).filter(k => !k.startsWith('_'));
-    }
+  .bar > div{
+    height:100%;
+    background: var(--accent);
+  }
 
-    function getChapters(book){
-      const b = DATA[book];
-      if(!b) return [];
-      return Object.keys(b).map(n=>parseInt(n,10)).sort((a,b)=>a-b).map(String);
-    }
+  .stats{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
 
-    function getVerses(book, chapter){
-      const c = DATA?.[book]?.[chapter];
-      if(!c) return [];
-      return Object.keys(c).map(n=>parseInt(n,10)).sort((a,b)=>a-b).map(String);
-    }
+  @media (max-width: 720px){
+    .stats{ grid-template-columns: 1fr; }
+  }
 
-    function computeWordsRead(targetBook, targetChapter, targetVerse){
-      const order = getBooks();
-      const total = DATA._meta?.totalWords || 0;
+  .stat{
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+  }
 
-      const targetBookIdx = order.indexOf(targetBook);
-      const targetCh = parseInt(targetChapter,10);
-      const targetV = parseInt(targetVerse,10);
+  .k{
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
 
-      let words = 0;
+  .v{
+    font-size: 16px;
+    font-weight: 700;
+  }
 
-      for(let bi=0; bi<order.length; bi++){
-        const book = order[bi];
-        const b = DATA[book];
-        if(!b) continue;
+  .mono{
+    font-family: "Courier New", monospace;
+  }
+</style>
 
-        const chapters = Object.keys(b).map(x=>parseInt(x,10)).sort((a,b)=>a-b);
-        for(const chNum of chapters){
-          const chKey = String(chNum);
-          const versesObj = b[chKey];
-          const verses = Object.keys(versesObj).map(x=>parseInt(x,10)).sort((a,b)=>a-b);
-
-          for(const vNum of verses){
-            const vKey = String(vNum);
-
-            const beforeBook = bi < targetBookIdx;
-            const sameBook = bi === targetBookIdx;
-            const beforeChapter = sameBook && chNum < targetCh;
-            const sameChapter = sameBook && chNum === targetCh;
-            const beforeOrEqualVerse = sameChapter && vNum <= targetV;
-
-            if(beforeBook || beforeChapter || beforeOrEqualVerse){
-              words += (versesObj[vKey] || 0);
-            } else {
-              return { wordsRead: words, totalWords: total };
-            }
-          }
-        }
-        if(bi === targetBookIdx) break;
-      }
-
-      return { wordsRead: words, totalWords: total };
-    }
-
-    function disableInputs(){
-      elBook.disabled = true;
-      elChapter.disabled = true;
-      elVerse.disabled = true;
-      elCalc.disabled = true;
-      elReset.disabled = true;
-    }
-
-    function enableInputs(){
-      elBook.disabled = false;
-      elChapter.disabled = false;
-      elVerse.disabled = false;
-      elCalc.disabled = false;
-      elReset.disabled = false;
-    }
-
-    function resetUI(){
-      elResult.style.display = 'none';
-      clearSelect(elChapter, 'Select a chapter');
-      clearSelect(elVerse, 'Select a verse');
-      elBook.value = '';
-      setStatus('Ready.');
-    }
-
-    function renderResult(book, chapter, verse){
-      const total = DATA._meta?.totalWords || 0;
-      if(!total){ setStatus('Total word count missing in JSON _meta.'); return; }
-
-      const { wordsRead, totalWords } = computeWordsRead(book, chapter, verse);
-      const pct = (wordsRead / totalWords) * 100;
-      const left = Math.max(0, totalWords - wordsRead);
-
-      elPercent.textContent = pct.toFixed(2) + '%';
-      elDetail.textContent = `Up to ${book} ${chapter}:${verse}`;
-      elWordsRead.textContent = wordsRead.toLocaleString();
-      elWordsLeft.textContent = left.toLocaleString();
-      elTotalWords.textContent = totalWords.toLocaleString();
-      elBarFill.style.width = Math.min(100, Math.max(0, pct)).toFixed(2) + '%';
-
-      elResult.style.display = 'block';
-      setStatus('Calculated.');
-    }
-
-    async function init(){
-      disableInputs();
-      clearSelect(elBook, 'Loading…');
-      clearSelect(elChapter, 'Select a book');
-      clearSelect(elVerse, 'Select a chapter');
-
-      try{
-        setStatus('Loading data…');
-        const res = await fetch('./kjv_word_counts.json', { cache: 'no-store' });
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        DATA = await res.json();
-
-        fillSelect(elBook, getBooks(), 'Select a book');
-        clearSelect(elChapter, 'Select a chapter');
-        clearSelect(elVerse, 'Select a verse');
-
-        enableInputs();
-        setStatus('Ready.');
-      }catch(err){
-        setStatus('Could not load kjv_word_counts.json. Check file name + location. ('+err.message+')');
-      }
-    }
-
-    elBook.addEventListener('change', () => {
-      elResult.style.display = 'none';
-      const book = elBook.value;
-      if(!book){
-        clearSelect(elChapter, 'Select a chapter');
-        clearSelect(elVerse, 'Select a verse');
-        return;
-      }
-      fillSelect(elChapter, getChapters(book), 'Select a chapter');
-      clearSelect(elVerse, 'Select a verse');
-    });
-
-    elChapter.addEventListener('change', () => {
-      elResult.style.display = 'none';
-      const book = elBook.value;
-      const chapter = elChapter.value;
-      if(!book || !chapter){
-        clearSelect(elVerse, 'Select a verse');
-        return;
-      }
-      fillSelect(elVerse, getVerses(book, chapter), 'Select a verse');
-    });
-
-    elCalc.addEventListener('click', () => {
-      const book = elBook.value;
-      const chapter = elChapter.value;
-      const verse = elVerse.value;
-      if(!book || !chapter || !verse){
-        setStatus('Pick a book, chapter, and verse.');
-        return;
-      }
-      renderResult(book, chapter, verse);
-    });
-
-    elReset.addEventListener('click', resetUI);
-
-    init();
-  </script>
-</body>
-</html>
 
 
 
