@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bible Progress (KJV)</title>
+  <title>Bible Progress</title>
 
   <style>
     :root{
@@ -13,7 +13,7 @@
       --border: #c9bfa9;
       --text: #1f1f1f;
       --muted: #5a544a;
-      --accent: #8b1e1e;        /* deep crimson */
+      --accent: #8b1e1e;
       --accent-soft: #e9cfcf;
       --shadow: 0 12px 30px rgba(0,0,0,.14);
       --radius: 14px;
@@ -46,7 +46,6 @@
       position: relative;
     }
 
-    /* subtle “ink” corners */
     .card:before, .card:after{
       content:"";
       position:absolute;
@@ -59,14 +58,12 @@
     .card:after{ bottom:-70px; right:-70px; }
 
     .header{
-      padding: 18px 22px 18px;
+      padding: 18px 22px;
       border-bottom: 1px solid var(--border);
-      position: relative;
+      text-align:center;
     }
 
     .headerImageWrap{
-      display:flex;
-      justify-content:center;
       padding: 10px 0 14px;
     }
 
@@ -74,6 +71,7 @@
       width: 120px;
       height: auto;
       display:block;
+      margin: 0 auto;
       filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
     }
 
@@ -82,8 +80,7 @@
       letter-spacing: .18em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 8px;
-      text-align:center;
+      margin-bottom: 6px;
     }
 
     h1{
@@ -91,7 +88,6 @@
       font-size: 24px;
       font-weight: 700;
       letter-spacing: .2px;
-      text-align:center;
     }
 
     .sub{
@@ -100,7 +96,6 @@
       font-size: 15px;
       line-height: 1.55;
       max-width: 72ch;
-      text-align:center;
     }
 
     .content{ padding: 20px 22px 24px; }
@@ -118,7 +113,7 @@
       display:block;
       font-size: 13px;
       color: var(--muted);
-      margin: 6px 0 6px;
+      margin: 6px 0;
     }
 
     select{
@@ -129,8 +124,10 @@
       background: #fff;
       font-family: inherit;
       font-size: 15px;
+      font-weight: 700; /* bold placeholder + selections */
       color: var(--text);
     }
+
     select:focus{
       outline:none;
       border-color: var(--accent);
@@ -155,21 +152,22 @@
       font-weight: 700;
       cursor:pointer;
     }
+
     button.secondary{
       background: #fff;
       color: var(--accent);
     }
+
     button:disabled{
       opacity:.55;
       cursor:not-allowed;
     }
 
-    /* Keep status line subtle. Blank by default. */
     .status{
       margin-left:auto;
       font-size: 13px;
       color: var(--muted);
-      min-height: 18px; /* reserve space so layout doesn't jump */
+      min-height: 18px;
     }
 
     .result{
@@ -192,7 +190,6 @@
       font-size: 44px;
       font-weight: 700;
       color: var(--accent);
-      line-height: 1.05;
     }
 
     .ref{
@@ -208,11 +205,11 @@
       overflow:hidden;
       border: 1px solid rgba(139,30,30,.18);
     }
+
     .bar > div{
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, #8b1e1e, #b33a3a);
-      transition: width .25s ease;
     }
 
     .stats{
@@ -231,18 +228,18 @@
       border: 1px solid var(--border);
       background: var(--paper2);
     }
+
     .k{
       font-size: 12px;
       color: var(--muted);
       margin-bottom: 4px;
-      letter-spacing: .02em;
     }
+
     .v{
       font-size: 16px;
       font-weight: 700;
       color: var(--text);
     }
-    .mono{ font-family: "Courier New", ui-monospace, monospace; }
 
     .note{
       margin-top: 14px;
@@ -257,15 +254,13 @@
   <div class="wrap">
     <div class="card">
       <div class="header">
-        <!-- Header image: add header.jpg beside index.html -->
         <div class="headerImageWrap">
-          <img class="headerImage" src="./header.jpg" alt="Bible icon" />
+          <img src="./header.jpg" class="headerImage" alt="Bible icon">
         </div>
 
-        <div class="kicker">Authorized Version</div>
-        <h1>Bible Progress Calculator (KJV)</h1>
+        <div class="kicker">Authorized Version · King James Version</div>
+        <h1>Bible Progress Calculator</h1>
 
-        <!-- Keep this wording consistent with the result wording -->
         <div class="sub">
           Select the <b>last verse completed</b> to see how far through the Bible you are.
         </div>
@@ -274,23 +269,23 @@
       <div class="content">
         <div class="grid">
           <div>
-            <label for="book">Book</label>
+            <label>Book</label>
             <select id="book" disabled>
-              <option>Loading…</option>
+              <option value="">Select book</option>
             </select>
           </div>
 
           <div>
-            <label for="chapter">Chapter</label>
+            <label>Chapter</label>
             <select id="chapter" disabled>
-              <option>Select a book</option>
+              <option value="">Select chapter</option>
             </select>
           </div>
 
           <div>
-            <label for="verse">Verse</label>
+            <label>Verse</label>
             <select id="verse" disabled>
-              <option>Select a chapter</option>
+              <option value="">Select verse</option>
             </select>
           </div>
         </div>
@@ -303,33 +298,29 @@
 
         <div class="result" id="result" style="display:none;">
           <div class="resultTop">
-            <div class="pct" id="percent">0.00%</div>
-
-            <!-- Keep result phrasing consistent with the subtitle -->
+            <div class="pct" id="percent"></div>
             <div class="ref" id="detail"></div>
           </div>
 
-          <div class="bar">
-            <div id="barFill"></div>
-          </div>
+          <div class="bar"><div id="barFill"></div></div>
 
           <div class="stats">
             <div class="stat">
               <div class="k">Words read</div>
-              <div class="v mono" id="wordsRead">0</div>
+              <div class="v" id="wordsRead"></div>
             </div>
             <div class="stat">
               <div class="k">Words remaining</div>
-              <div class="v mono" id="wordsLeft">0</div>
+              <div class="v" id="wordsLeft"></div>
             </div>
             <div class="stat">
               <div class="k">Total words</div>
-              <div class="v mono" id="totalWords">0</div>
+              <div class="v" id="totalWords"></div>
             </div>
           </div>
 
           <div class="note">
-            Bracketed KJV words are included (matching most printed KJV Bibles).
+            Bracketed words are included (matching most printed KJV Bibles).
           </div>
         </div>
       </div>
@@ -337,218 +328,105 @@
   </div>
 
   <script>
-    const elBook = document.getElementById('book');
-    const elChapter = document.getElementById('chapter');
-    const elVerse = document.getElementById('verse');
-    const elCalc = document.getElementById('calc');
-    const elReset = document.getElementById('reset');
-    const elStatus = document.getElementById('status');
+    const bookSel = document.getElementById("book");
+    const chapSel = document.getElementById("chapter");
+    const verseSel = document.getElementById("verse");
+    const calcBtn = document.getElementById("calc");
+    const resetBtn = document.getElementById("reset");
+    const status = document.getElementById("status");
 
-    const elResult = document.getElementById('result');
-    const elPercent = document.getElementById('percent');
-    const elDetail = document.getElementById('detail');
-    const elTotalWords = document.getElementById('totalWords');
-    const elWordsRead = document.getElementById('wordsRead');
-    const elWordsLeft = document.getElementById('wordsLeft');
-    const elBarFill = document.getElementById('barFill');
+    const percentEl = document.getElementById("percent");
+    const detailEl = document.getElementById("detail");
+    const wordsReadEl = document.getElementById("wordsRead");
+    const wordsLeftEl = document.getElementById("wordsLeft");
+    const totalWordsEl = document.getElementById("totalWords");
+    const barFill = document.getElementById("barFill");
+    const result = document.getElementById("result");
 
-    let DATA = null;
+    let DATA;
 
-    function setStatus(msg){ elStatus.textContent = msg || ""; }
-
-    function clearSelect(sel, placeholder){
-      sel.innerHTML = '';
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = placeholder;
-      sel.appendChild(opt);
-      sel.value = '';
-    }
+    function clearStatus(){ status.textContent = ""; }
 
     function fillSelect(sel, values, placeholder){
-      clearSelect(sel, placeholder);
-      for(const v of values){
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v;
-        sel.appendChild(opt);
-      }
+      sel.innerHTML = `<option value="">${placeholder}</option>`;
+      values.forEach(v => {
+        const o = document.createElement("option");
+        o.value = v;
+        o.textContent = v;
+        sel.appendChild(o);
+      });
     }
 
-    function getBooks(){
-      return DATA._order || Object.keys(DATA).filter(k => !k.startsWith('_'));
-    }
+    function getBooks(){ return DATA._order; }
+    function getChapters(b){ return Object.keys(DATA[b]).sort((a,b)=>a-b); }
+    function getVerses(b,c){ return Object.keys(DATA[b][c]).sort((a,b)=>a-b); }
 
-    function getChapters(book){
-      const b = DATA[book];
-      if(!b) return [];
-      return Object.keys(b).map(n=>parseInt(n,10)).sort((a,b)=>a-b).map(String);
-    }
+    function compute(book, chap, verse){
+      let total = DATA._meta.totalWords;
+      let read = 0;
 
-    function getVerses(book, chapter){
-      const c = DATA?.[book]?.[chapter];
-      if(!c) return [];
-      return Object.keys(c).map(n=>parseInt(n,10)).sort((a,b)=>a-b).map(String);
-    }
-
-    function computeWordsRead(targetBook, targetChapter, targetVerse){
-      const order = getBooks();
-      const total = DATA._meta?.totalWords || 0;
-
-      const targetBookIdx = order.indexOf(targetBook);
-      const targetCh = parseInt(targetChapter,10);
-      const targetV = parseInt(targetVerse,10);
-
-      let words = 0;
-
-      for(let bi=0; bi<order.length; bi++){
-        const book = order[bi];
-        const b = DATA[book];
-        if(!b) continue;
-
-        const chapters = Object.keys(b).map(x=>parseInt(x,10)).sort((a,b)=>a-b);
-        for(const chNum of chapters){
-          const chKey = String(chNum);
-          const versesObj = b[chKey];
-          const verses = Object.keys(versesObj).map(x=>parseInt(x,10)).sort((a,b)=>a-b);
-
-          for(const vNum of verses){
-            const vKey = String(vNum);
-
-            const beforeBook = bi < targetBookIdx;
-            const sameBook = bi === targetBookIdx;
-            const beforeChapter = sameBook && chNum < targetCh;
-            const sameChapter = sameBook && chNum === targetCh;
-            const beforeOrEqualVerse = sameChapter && vNum <= targetV;
-
-            if(beforeBook || beforeChapter || beforeOrEqualVerse){
-              words += (versesObj[vKey] || 0);
-            } else {
-              return { wordsRead: words, totalWords: total };
-            }
+      for (const b of DATA._order){
+        for (const c of Object.keys(DATA[b])){
+          for (const v of Object.keys(DATA[b][c])){
+            if (
+              b === book &&
+              Number(c) === Number(chap) &&
+              Number(v) > Number(verse)
+            ) return { read, total };
+            read += DATA[b][c][v];
           }
         }
-        if(bi === targetBookIdx) break;
+        if (b === book) break;
       }
-
-      return { wordsRead: words, totalWords: total };
+      return { read, total };
     }
 
-    function disableInputs(){
-      elBook.disabled = true;
-      elChapter.disabled = true;
-      elVerse.disabled = true;
-      elCalc.disabled = true;
-      elReset.disabled = true;
-    }
+    fetch("./kjv_word_counts.json")
+      .then(r => r.json())
+      .then(j => {
+        DATA = j;
+        fillSelect(bookSel, getBooks(), "Select book");
+        bookSel.disabled = false;
+        chapSel.disabled = false;
+        verseSel.disabled = false;
+        calcBtn.disabled = false;
+        resetBtn.disabled = false;
+      });
 
-    function enableInputs(){
-      elBook.disabled = false;
-      elChapter.disabled = false;
-      elVerse.disabled = false;
-      elCalc.disabled = false;
-      elReset.disabled = false;
-    }
+    bookSel.onchange = () => {
+      result.style.display = "none";
+      clearStatus();
+      fillSelect(chapSel, getChapters(bookSel.value), "Select chapter");
+      fillSelect(verseSel, [], "Select verse");
+    };
 
-    function resetUI(){
-      elResult.style.display = 'none';
-      clearSelect(elChapter, 'Select a book');
-      clearSelect(elVerse, 'Select a chapter');
-      elBook.value = '';
-      setStatus(""); // no “ready” text
-    }
+    chapSel.onchange = () => {
+      result.style.display = "none";
+      clearStatus();
+      fillSelect(verseSel, getVerses(bookSel.value, chapSel.value), "Select verse");
+    };
 
-    function renderResult(book, chapter, verse){
-      const total = DATA._meta?.totalWords || 0;
-      if(!total){
-        setStatus('Data loaded, but total word count is missing.');
-        return;
-      }
+    calcBtn.onclick = () => {
+      if (!bookSel.value || !chapSel.value || !verseSel.value) return;
+      const { read, total } = compute(bookSel.value, chapSel.value, verseSel.value);
+      const pct = (read / total) * 100;
 
-      const { wordsRead, totalWords } = computeWordsRead(book, chapter, verse);
-      const pct = (wordsRead / totalWords) * 100;
-      const left = Math.max(0, totalWords - wordsRead);
+      percentEl.textContent = pct.toFixed(2) + "%";
+      detailEl.textContent = `Last verse completed: ${bookSel.value} ${chapSel.value}:${verseSel.value}`;
+      wordsReadEl.textContent = read.toLocaleString();
+      wordsLeftEl.textContent = (total - read).toLocaleString();
+      totalWordsEl.textContent = total.toLocaleString();
+      barFill.style.width = pct + "%";
+      result.style.display = "block";
+    };
 
-      elPercent.textContent = pct.toFixed(2) + '%';
-
-      // Keep wording consistent with the header subtitle
-      elDetail.textContent = `Last verse completed: ${book} ${chapter}:${verse}`;
-
-      elWordsRead.textContent = wordsRead.toLocaleString();
-      elWordsLeft.textContent = left.toLocaleString();
-      elTotalWords.textContent = totalWords.toLocaleString();
-      elBarFill.style.width = Math.min(100, Math.max(0, pct)).toFixed(2) + '%';
-
-      elResult.style.display = 'block';
-      setStatus(""); // no “calculated”
-    }
-
-    async function init(){
-      disableInputs();
-      clearSelect(elBook, 'Loading…');
-      clearSelect(elChapter, 'Select a book');
-      clearSelect(elVerse, 'Select a chapter');
-      setStatus(""); // no “ready” text
-
-      try{
-        const res = await fetch('./kjv_word_counts.json', { cache: 'no-store' });
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        DATA = await res.json();
-
-        fillSelect(elBook, getBooks(), 'Select a book');
-        clearSelect(elChapter, 'Select a book');
-        clearSelect(elVerse, 'Select a chapter');
-
-        enableInputs();
-        setStatus(""); // stay blank
-      }catch(err){
-        setStatus('Could not load the data file. (' + err.message + ')');
-      }
-    }
-
-    elBook.addEventListener('change', () => {
-      elResult.style.display = 'none';
-      setStatus("");
-
-      const book = elBook.value;
-      if(!book){
-        clearSelect(elChapter, 'Select a book');
-        clearSelect(elVerse, 'Select a chapter');
-        return;
-      }
-      fillSelect(elChapter, getChapters(book), 'Select a chapter');
-      clearSelect(elVerse, 'Select a chapter');
-    });
-
-    elChapter.addEventListener('change', () => {
-      elResult.style.display = 'none';
-      setStatus("");
-
-      const book = elBook.value;
-      const chapter = elChapter.value;
-      if(!book || !chapter){
-        clearSelect(elVerse, 'Select a chapter');
-        return;
-      }
-      fillSelect(elVerse, getVerses(book, chapter), 'Select a verse');
-    });
-
-    elCalc.addEventListener('click', () => {
-      const book = elBook.value;
-      const chapter = elChapter.value;
-      const verse = elVerse.value;
-
-      if(!book || !chapter || !verse){
-        setStatus('Select a book, chapter, and verse.');
-        return;
-      }
-
-      renderResult(book, chapter, verse);
-    });
-
-    elReset.addEventListener('click', resetUI);
-
-    init();
+    resetBtn.onclick = () => {
+      result.style.display = "none";
+      bookSel.value = "";
+      fillSelect(chapSel, [], "Select chapter");
+      fillSelect(verseSel, [], "Select verse");
+      clearStatus();
+    };
   </script>
 </body>
 </html>
