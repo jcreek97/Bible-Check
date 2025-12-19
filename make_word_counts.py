@@ -1,38 +1,59 @@
-import json, re
+import json
+import re
 from pathlib import Path
 
-# INPUT / OUTPUT (repo root)
+# =========================
+# FILE LOCATIONS (repo root)
+# =========================
 INPUT = Path("verses-1769.json")
 OUTPUT = Path("kjv_word_counts.json")
 
-# Canonical 66-book KJV order
+# =========================
+# CANONICAL KJV BOOK ORDER
+# =========================
 BOOK_ORDER = [
-  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy",
-  "Joshua","Judges","Ruth","1 Samuel","2 Samuel",
-  "1 Kings","2 Kings","1 Chronicles","2 Chronicles",
-  "Ezra","Nehemiah","Esther","Job","Psalms",
-  "Proverbs","Ecclesiastes","Song of Solomon","Isaiah",
-  "Jeremiah","Lamentations","Ezekiel","Daniel",
-  "Hosea","Joel","Amos","Obadiah","Jonah","Micah",
-  "Nahum","Habakkuk","Zephaniah","Haggai","Zechariah",
-  "Malachi",
-  "Matthew","Mark","Luke","John","Acts",
-  "Romans","1 Corinthians","2 Corinthians","Galatians",
-  "Ephesians","Philippians","Colossians","1 Thessalonians",
-  "2 Thessalonians","1 Timothy","2 Timothy","Titus",
-  "Philemon","Hebrews","James","1 Peter","2 Peter",
-  "1 John","2 John","3 John","Jude","Revelation"
+    "Genesis","Exodus","Leviticus","Numbers","Deuteronomy",
+    "Joshua","Judges","Ruth","1 Samuel","2 Samuel",
+    "1 Kings","2 Kings","1 Chronicles","2 Chronicles",
+    "Ezra","Nehemiah","Esther","Job","Psalms",
+    "Proverbs","Ecclesiastes","Song of Solomon","Isaiah",
+    "Jeremiah","Lamentations","Ezekiel","Daniel",
+    "Hosea","Joel","Amos","Obadiah","Jonah","Micah",
+    "Nahum","Habakkuk","Zephaniah","Haggai","Zechariah",
+    "Malachi",
+    "Matthew","Mark","Luke","John","Acts",
+    "Romans","1 Corinthians","2 Corinthians","Galatians",
+    "Ephesians","Philippians","Colossians","1 Thessalonians",
+    "2 Thessalonians","1 Timothy","2 Timothy","Titus",
+    "Philemon","Hebrews","James","1 Peter","2 Peter",
+    "1 John","2 John","3 John","Jude","Revelation"
 ]
 
-# Word definition:
+# =========================
+# BOOK NAME NORMALISATION
+# =========================
+ALIASES = {
+    "Song of Songs": "Song of Solomon",
+    "Canticles": "Song of Solomon",
+    "Solomon's Song": "Song of Solomon",
+    "Song of Solomon": "Song of Solomon"
+}
+
+# =========================
+# WORD TOKEN RULE
+# =========================
+# Counts:
 # - letters A–Z
-# - internal apostrophes or hyphens count as part of the word
+# - allows internal apostrophes or hyphens
 #   (God's, can't, well-being)
 WORD_RE = re.compile(r"[A-Za-z]+(?:[\'’-][A-Za-z]+)*")
 
+def normalise_book(book: str) -> str:
+    return ALIASES.get(book, book)
+
 def count_words(text: str) -> int:
-    # Remove paragraph markers and bracket notation
-    # but KEEP the words inside the brackets
+    # Remove paragraph markers and brackets,
+    # but KEEP the words inside brackets
     text = (
         text.replace("#", " ")
             .replace("[", "")
@@ -43,11 +64,13 @@ def count_words(text: str) -> int:
 
 def parse_ref(ref: str):
     """
-    Parses:
+    Parses references like:
       'Genesis 1:1'
       '1 John 5:7'
+      'Solomon's Song 2:3'
     """
     book, chv = ref.rsplit(" ", 1)
+    book = normalise_book(book)
     chapter, verse = chv.split(":")
     return book, int(chapter), int(verse)
 
@@ -81,7 +104,7 @@ def main():
 
     out["_meta"]["totalWords"] = total_words
 
-    # Integrity check
+    # Final integrity check
     missing_books = [b for b in BOOK_ORDER if b not in out]
     if missing_books:
         raise RuntimeError(f"Missing books in output: {missing_books}")
@@ -96,3 +119,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
