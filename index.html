@@ -59,9 +59,22 @@
     .card:after{ bottom:-70px; right:-70px; }
 
     .header{
-      padding: 24px 22px 18px;
+      padding: 18px 22px 18px;
       border-bottom: 1px solid var(--border);
       position: relative;
+    }
+
+    .headerImageWrap{
+      display:flex;
+      justify-content:center;
+      padding: 10px 0 14px;
+    }
+
+    .headerImage{
+      width: 120px;
+      height: auto;
+      display:block;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
     }
 
     .kicker{
@@ -70,6 +83,7 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 8px;
+      text-align:center;
     }
 
     h1{
@@ -77,14 +91,16 @@
       font-size: 24px;
       font-weight: 700;
       letter-spacing: .2px;
+      text-align:center;
     }
 
     .sub{
-      margin-top: 10px;
+      margin: 12px auto 0;
       color: var(--muted);
       font-size: 15px;
       line-height: 1.55;
-      max-width: 70ch;
+      max-width: 72ch;
+      text-align:center;
     }
 
     .content{ padding: 20px 22px 24px; }
@@ -148,10 +164,12 @@
       cursor:not-allowed;
     }
 
+    /* Keep status line subtle. Blank by default. */
     .status{
       margin-left:auto;
       font-size: 13px;
       color: var(--muted);
+      min-height: 18px; /* reserve space so layout doesn't jump */
     }
 
     .result{
@@ -239,10 +257,17 @@
   <div class="wrap">
     <div class="card">
       <div class="header">
+        <!-- Header image: add header.jpg beside index.html -->
+        <div class="headerImageWrap">
+          <img class="headerImage" src="./header.jpg" alt="Bible icon" />
+        </div>
+
         <div class="kicker">Authorized Version</div>
         <h1>Bible Progress Calculator (KJV)</h1>
+
+        <!-- Keep this wording consistent with the result wording -->
         <div class="sub">
-          Select the <b>last verse completed</b>. Progress is measured by <b>word count</b> so longer chapters weigh more.
+          Select the <b>last verse completed</b> to see how far through the Bible you are.
         </div>
       </div>
 
@@ -271,14 +296,16 @@
         </div>
 
         <div class="actions">
-          <button id="calc" disabled>Calculate</button>
+          <button id="calc" disabled>Show progress</button>
           <button id="reset" class="secondary" disabled>Reset</button>
-          <div class="status" id="status">Loading data…</div>
+          <div class="status" id="status"></div>
         </div>
 
         <div class="result" id="result" style="display:none;">
           <div class="resultTop">
             <div class="pct" id="percent">0.00%</div>
+
+            <!-- Keep result phrasing consistent with the subtitle -->
             <div class="ref" id="detail"></div>
           </div>
 
@@ -296,7 +323,7 @@
               <div class="v mono" id="wordsLeft">0</div>
             </div>
             <div class="stat">
-              <div class="k">Total words (dataset)</div>
+              <div class="k">Total words</div>
               <div class="v mono" id="totalWords">0</div>
             </div>
           </div>
@@ -327,7 +354,7 @@
 
     let DATA = null;
 
-    function setStatus(msg){ elStatus.textContent = msg; }
+    function setStatus(msg){ elStatus.textContent = msg || ""; }
 
     function clearSelect(sel, placeholder){
       sel.innerHTML = '';
@@ -428,26 +455,32 @@
       clearSelect(elChapter, 'Select a book');
       clearSelect(elVerse, 'Select a chapter');
       elBook.value = '';
-      setStatus('Ready.');
+      setStatus(""); // no “ready” text
     }
 
     function renderResult(book, chapter, verse){
       const total = DATA._meta?.totalWords || 0;
-      if(!total){ setStatus('Data loaded, but total word count missing.'); return; }
+      if(!total){
+        setStatus('Data loaded, but total word count is missing.');
+        return;
+      }
 
       const { wordsRead, totalWords } = computeWordsRead(book, chapter, verse);
       const pct = (wordsRead / totalWords) * 100;
       const left = Math.max(0, totalWords - wordsRead);
 
       elPercent.textContent = pct.toFixed(2) + '%';
-      elDetail.textContent = `Up to ${book} ${chapter}:${verse}`;
+
+      // Keep wording consistent with the header subtitle
+      elDetail.textContent = `Last verse completed: ${book} ${chapter}:${verse}`;
+
       elWordsRead.textContent = wordsRead.toLocaleString();
       elWordsLeft.textContent = left.toLocaleString();
       elTotalWords.textContent = totalWords.toLocaleString();
       elBarFill.style.width = Math.min(100, Math.max(0, pct)).toFixed(2) + '%';
 
       elResult.style.display = 'block';
-      setStatus('Calculated.');
+      setStatus(""); // no “calculated”
     }
 
     async function init(){
@@ -455,9 +488,9 @@
       clearSelect(elBook, 'Loading…');
       clearSelect(elChapter, 'Select a book');
       clearSelect(elVerse, 'Select a chapter');
+      setStatus(""); // no “ready” text
 
       try{
-        setStatus('Loading…');
         const res = await fetch('./kjv_word_counts.json', { cache: 'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         DATA = await res.json();
@@ -467,15 +500,16 @@
         clearSelect(elVerse, 'Select a chapter');
 
         enableInputs();
-        setStatus('Ready.');
+        setStatus(""); // stay blank
       }catch(err){
-        // Keep this message, but it only shows in the status line (not as a big “developer note” block)
         setStatus('Could not load the data file. (' + err.message + ')');
       }
     }
 
     elBook.addEventListener('change', () => {
       elResult.style.display = 'none';
+      setStatus("");
+
       const book = elBook.value;
       if(!book){
         clearSelect(elChapter, 'Select a book');
@@ -488,6 +522,8 @@
 
     elChapter.addEventListener('change', () => {
       elResult.style.display = 'none';
+      setStatus("");
+
       const book = elBook.value;
       const chapter = elChapter.value;
       if(!book || !chapter){
@@ -501,10 +537,12 @@
       const book = elBook.value;
       const chapter = elChapter.value;
       const verse = elVerse.value;
+
       if(!book || !chapter || !verse){
         setStatus('Select a book, chapter, and verse.');
         return;
       }
+
       renderResult(book, chapter, verse);
     });
 
@@ -514,8 +552,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
