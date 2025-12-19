@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Bible Progress</title>
 
+  <!-- Social preview (works best with absolute URLs once your custom domain is live) -->
+  <meta property="og:title" content="Bible Progress Calculator" />
+  <meta property="og:description" content="Check how far through the Bible you are (King James Version · Authorized Version)." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="./header.jpg" />
+
   <style>
     :root{
       --bg: #f4efe6;
@@ -69,15 +75,13 @@
       filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
     }
 
-    /* PRIMARY TITLE */
     .title{
       font-size: 24px;
       font-weight: 700;
       letter-spacing: .2px;
-      margin-bottom: 18px; /* increased spacing */
+      margin-bottom: 18px;
     }
 
-    /* SECONDARY LINE */
     .version{
       font-size: 12px;
       letter-spacing: .18em;
@@ -285,6 +289,7 @@
 
         <div class="actions">
           <button id="calc" disabled>Show progress</button>
+          <button id="share" class="secondary" disabled>Share</button>
           <button id="reset" class="secondary" disabled>Reset</button>
           <div class="status" id="status"></div>
         </div>
@@ -325,7 +330,9 @@
     const chapSel = document.getElementById("chapter");
     const verseSel = document.getElementById("verse");
     const calcBtn = document.getElementById("calc");
+    const shareBtn = document.getElementById("share");
     const resetBtn = document.getElementById("reset");
+    const statusEl = document.getElementById("status");
 
     const percentEl = document.getElementById("percent");
     const detailEl = document.getElementById("detail");
@@ -336,6 +343,10 @@
     const result = document.getElementById("result");
 
     let DATA;
+
+    function setStatus(msg){
+      statusEl.textContent = msg || "";
+    }
 
     function fillSelect(sel, values, placeholder){
       sel.innerHTML = `<option value="">${placeholder}</option>`;
@@ -364,30 +375,36 @@
       return { read, total };
     }
 
-    fetch("./kjv_word_counts.json")
-      .then(r => r.json())
-      .then(j => {
-        DATA = j;
-        fillSelect(bookSel, DATA._order, "Select Book");
-        bookSel.disabled = chapSel.disabled = verseSel.disabled = false;
-        calcBtn.disabled = resetBtn.disabled = false;
-      });
+    function setUrlParams(book, chapter, verse){
+      const url = new URL(window.location.href);
+      url.searchParams.set("book", book);
+      url.searchParams.set("chapter", String(chapter));
+      url.searchParams.set("verse", String(verse));
+      window.history.replaceState({}, "", url.toString());
+    }
 
-    bookSel.onchange = () => {
-      result.style.display = "none";
-      fillSelect(chapSel, Object.keys(DATA[bookSel.value]), "Select Chapter");
-      fillSelect(verseSel, [], "Select Verse");
-    };
+    function clearUrlParams(){
+      const url = new URL(window.location.href);
+      url.searchParams.delete("book");
+      url.searchParams.delete("chapter");
+      url.searchParams.delete("verse");
+      window.history.replaceState({}, "", url.toString());
+    }
 
-    chapSel.onchange = () => {
-      result.style.display = "none";
-      fillSelect(verseSel, Object.keys(DATA[bookSel.value][chapSel.value]), "Select Verse");
-    };
+    function getUrlParams(){
+      const url = new URL(window.location.href);
+      const book = url.searchParams.get("book") || "";
+      const chapter = url.searchParams.get("chapter") || "";
+      const verse = url.searchParams.get("verse") || "";
+      return { book, chapter, verse };
+    }
 
-    calcBtn.onclick = () => {
+    function doCalculate(){
       if (!bookSel.value || !chapSel.value || !verseSel.value) return;
+
       const { read, total } = compute(bookSel.value, chapSel.value, verseSel.value);
       const pct = (read / total) * 100;
+
       percentEl.textContent = pct.toFixed(2) + "%";
       detailEl.textContent = `Last verse completed: ${bookSel.value} ${chapSel.value}:${verseSel.value}`;
       wordsReadEl.textContent = read.toLocaleString();
@@ -395,13 +412,113 @@
       totalWordsEl.textContent = total.toLocaleString();
       barFill.style.width = pct + "%";
       result.style.display = "block";
+
+      setUrlParams(bookSel.value, chapSel.value, verseSel.value);
+    }
+
+    async function shareResult(){
+      if (!bookSel.value || !chapSel.value || !verseSel.value) return;
+
+      const url = window.location.href;
+      const shareText = `I’m ${percentEl.textContent} through the Bible (KJV). Last verse: ${bookSel.value} ${chapSel.value}:${verseSel.value}.`;
+
+      try{
+        if (navigator.share){
+          await navigator.share({
+            title: "Bible Progress Calculator",
+            text: shareText,
+            url
+          });
+          setStatus("");
+          return;
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(url);
+          setStatus("Link copied.");
+          return;
+        }
+
+        // fallback
+        prompt("Copy this link:", url);
+        setStatus("");
+      } catch (e){
+        // If user cancels share, don’t show an error.
+        setStatus("");
+      }
+    }
+
+    fetch("./kjv_word_counts.json")
+      .then(r => {
+        if (!r.ok) throw new Error("Could not load word count data.");
+        return r.json();
+      })
+      .then(j => {
+        DATA = j;
+
+        fillSelect(bookSel, DATA._order, "Select Book");
+        bookSel.disabled = chapSel.disabled = verseSel.disabled = false;
+        calcBtn.disabled = shareBtn.disabled = resetBtn.disabled = false;
+
+        // If opened from a shared link, restore and auto-calc.
+        const { book, chapter, verse } = getUrlParams();
+        if (book && chapter && verse && DATA[book] && DATA[book][chapter] && DATA[book][chapter][verse]){
+          bookSel.value = book;
+          // trigger chapter list
+          fillSelect(chapSel, Object.keys(DATA[bookSel.value]), "Select Chapter");
+          chapSel.value = chapter;
+          // trigger verse list
+          fillSelect(verseSel, Object.keys(DATA[bookSel.value][chapSel.value]), "Select Verse");
+          verseSel.value = verse;
+          doCalculate();
+        }
+      })
+      .catch(() => {
+        setStatus("Could not load required data.");
+      });
+
+    bookSel.onchange = () => {
+      result.style.display = "none";
+      setStatus("");
+      if (!bookSel.value){
+        fillSelect(chapSel, [], "Select Chapter");
+        fillSelect(verseSel, [], "Select Verse");
+        clearUrlParams();
+        return;
+      }
+      fillSelect(chapSel, Object.keys(DATA[bookSel.value]), "Select Chapter");
+      fillSelect(verseSel, [], "Select Verse");
+      clearUrlParams();
+    };
+
+    chapSel.onchange = () => {
+      result.style.display = "none";
+      setStatus("");
+      if (!bookSel.value || !chapSel.value){
+        fillSelect(verseSel, [], "Select Verse");
+        clearUrlParams();
+        return;
+      }
+      fillSelect(verseSel, Object.keys(DATA[bookSel.value][chapSel.value]), "Select Verse");
+      clearUrlParams();
+    };
+
+    calcBtn.onclick = () => {
+      setStatus("");
+      doCalculate();
+    };
+
+    shareBtn.onclick = () => {
+      shareResult();
     };
 
     resetBtn.onclick = () => {
       result.style.display = "none";
+      setStatus("");
       bookSel.value = "";
       fillSelect(chapSel, [], "Select Chapter");
       fillSelect(verseSel, [], "Select Verse");
+      clearUrlParams();
     };
   </script>
 </body>
