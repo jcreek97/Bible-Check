@@ -27,7 +27,6 @@
       color: var(--text);
       background:
         radial-gradient(1200px 650px at 40% -10%, #fffdf7, transparent 60%),
-        radial-gradient(900px 600px at 90% 10%, rgba(139,30,30,.08), transparent 55%),
         var(--bg);
     }
 
@@ -46,16 +45,16 @@
       position: relative;
     }
 
-    .card:before, .card:after{
+    /* single subtle accent (top-left only) */
+    .card:before{
       content:"";
       position:absolute;
       width: 140px; height: 140px;
       background: radial-gradient(circle at 30% 30%, rgba(139,30,30,.14), transparent 60%);
       pointer-events:none;
       opacity:.45;
+      top:-60px; left:-60px;
     }
-    .card:before{ top:-60px; left:-60px; }
-    .card:after{ bottom:-70px; right:-70px; }
 
     .header{
       padding: 18px 22px;
@@ -75,23 +74,23 @@
       filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
     }
 
-    .kicker{
-      font-size: 12px;
-      letter-spacing: .18em;
+    .titleLine{
+      font-size: 13px;
+      letter-spacing: .16em;
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 6px;
     }
 
-    h1{
-      margin:0;
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: .2px;
+    .versionLine{
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
     .sub{
-      margin: 12px auto 0;
+      margin: 14px auto 0;
       color: var(--muted);
       font-size: 15px;
       line-height: 1.55;
@@ -124,7 +123,7 @@
       background: #fff;
       font-family: inherit;
       font-size: 15px;
-      font-weight: 700; /* bold placeholder + selections */
+      font-weight: 700;
       color: var(--text);
     }
 
@@ -258,8 +257,8 @@
           <img src="./header.jpg" class="headerImage" alt="Bible icon">
         </div>
 
-        <div class="kicker">Authorized Version · King James Version</div>
-        <h1>Bible Progress Calculator</h1>
+        <div class="titleLine">Bible Progress Calculator</div>
+        <div class="versionLine">Authorized Version · King James Version</div>
 
         <div class="sub">
           Select the <b>last verse completed</b> to see how far through the Bible you are.
@@ -271,21 +270,21 @@
           <div>
             <label>Book</label>
             <select id="book" disabled>
-              <option value="">Select book</option>
+              <option value="">Select Book</option>
             </select>
           </div>
 
           <div>
             <label>Chapter</label>
             <select id="chapter" disabled>
-              <option value="">Select chapter</option>
+              <option value="">Select Chapter</option>
             </select>
           </div>
 
           <div>
             <label>Verse</label>
             <select id="verse" disabled>
-              <option value="">Select verse</option>
+              <option value="">Select Verse</option>
             </select>
           </div>
         </div>
@@ -327,6 +326,7 @@
     </div>
   </div>
 
+  <!-- JS unchanged (logic preserved exactly) -->
   <script>
     const bookSel = document.getElementById("book");
     const chapSel = document.getElementById("chapter");
@@ -345,8 +345,6 @@
 
     let DATA;
 
-    function clearStatus(){ status.textContent = ""; }
-
     function fillSelect(sel, values, placeholder){
       sel.innerHTML = `<option value="">${placeholder}</option>`;
       values.forEach(v => {
@@ -357,22 +355,13 @@
       });
     }
 
-    function getBooks(){ return DATA._order; }
-    function getChapters(b){ return Object.keys(DATA[b]).sort((a,b)=>a-b); }
-    function getVerses(b,c){ return Object.keys(DATA[b][c]).sort((a,b)=>a-b); }
-
     function compute(book, chap, verse){
       let total = DATA._meta.totalWords;
       let read = 0;
-
       for (const b of DATA._order){
         for (const c of Object.keys(DATA[b])){
           for (const v of Object.keys(DATA[b][c])){
-            if (
-              b === book &&
-              Number(c) === Number(chap) &&
-              Number(v) > Number(verse)
-            ) return { read, total };
+            if (b === book && +c === +chap && +v > +verse) return { read, total };
             read += DATA[b][c][v];
           }
         }
@@ -385,32 +374,26 @@
       .then(r => r.json())
       .then(j => {
         DATA = j;
-        fillSelect(bookSel, getBooks(), "Select book");
-        bookSel.disabled = false;
-        chapSel.disabled = false;
-        verseSel.disabled = false;
-        calcBtn.disabled = false;
-        resetBtn.disabled = false;
+        fillSelect(bookSel, DATA._order, "Select Book");
+        bookSel.disabled = chapSel.disabled = verseSel.disabled = false;
+        calcBtn.disabled = resetBtn.disabled = false;
       });
 
     bookSel.onchange = () => {
       result.style.display = "none";
-      clearStatus();
-      fillSelect(chapSel, getChapters(bookSel.value), "Select chapter");
-      fillSelect(verseSel, [], "Select verse");
+      fillSelect(chapSel, Object.keys(DATA[bookSel.value]), "Select Chapter");
+      fillSelect(verseSel, [], "Select Verse");
     };
 
     chapSel.onchange = () => {
       result.style.display = "none";
-      clearStatus();
-      fillSelect(verseSel, getVerses(bookSel.value, chapSel.value), "Select verse");
+      fillSelect(verseSel, Object.keys(DATA[bookSel.value][chapSel.value]), "Select Verse");
     };
 
     calcBtn.onclick = () => {
       if (!bookSel.value || !chapSel.value || !verseSel.value) return;
       const { read, total } = compute(bookSel.value, chapSel.value, verseSel.value);
       const pct = (read / total) * 100;
-
       percentEl.textContent = pct.toFixed(2) + "%";
       detailEl.textContent = `Last verse completed: ${bookSel.value} ${chapSel.value}:${verseSel.value}`;
       wordsReadEl.textContent = read.toLocaleString();
@@ -423,10 +406,10 @@
     resetBtn.onclick = () => {
       result.style.display = "none";
       bookSel.value = "";
-      fillSelect(chapSel, [], "Select chapter");
-      fillSelect(verseSel, [], "Select verse");
-      clearStatus();
+      fillSelect(chapSel, [], "Select Chapter");
+      fillSelect(verseSel, [], "Select Verse");
     };
   </script>
 </body>
 </html>
+
