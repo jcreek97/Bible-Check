@@ -1,192 +1,520 @@
-<style>
-  :root{
-    --bg: #f4efe6;
-    --panel: #fffaf0;
-    --border: #c9bfa9;
-    --text: #1f1f1f;
-    --muted: #5a544a;
-    --accent: #8b1e1e;   /* deep crimson */
-    --accent-soft: #e8c9c9;
-    --shadow: 0 10px 30px rgba(0,0,0,.15);
-    --radius: 14px;
-  }
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bible Progress (KJV)</title>
 
-  *{ box-sizing:border-box; }
+  <style>
+    :root{
+      --bg: #f4efe6;
+      --paper: #fffaf0;
+      --paper2:#fffdf8;
+      --border: #c9bfa9;
+      --text: #1f1f1f;
+      --muted: #5a544a;
+      --accent: #8b1e1e;        /* deep crimson */
+      --accent-soft: #e9cfcf;
+      --shadow: 0 12px 30px rgba(0,0,0,.14);
+      --radius: 14px;
+    }
 
-  body{
-    margin:0;
-    font-family: "Georgia", "Times New Roman", serif;
-    background:
-      radial-gradient(1200px 600px at 50% -10%, #fffdf8, transparent 60%),
-      var(--bg);
-    color: var(--text);
-  }
+    *{ box-sizing:border-box; }
 
-  .wrap{
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 36px 16px 48px;
-  }
+    body{
+      margin:0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 650px at 40% -10%, #fffdf7, transparent 60%),
+        radial-gradient(900px 600px at 90% 10%, rgba(139,30,30,.08), transparent 55%),
+        var(--bg);
+    }
 
-  .card{
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow:hidden;
-  }
+    .wrap{
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 34px 16px 54px;
+    }
 
-  .header{
-    padding: 24px 22px 18px;
-    border-bottom: 1px solid var(--border);
-  }
+    .card{
+      background: linear-gradient(180deg, var(--paper), var(--paper2));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position: relative;
+    }
 
-  h1{
-    margin:0;
-    font-size: 22px;
-    letter-spacing: .3px;
-    font-weight: 700;
-  }
+    /* subtle “ink” corners */
+    .card:before, .card:after{
+      content:"";
+      position:absolute;
+      width: 140px; height: 140px;
+      background: radial-gradient(circle at 30% 30%, rgba(139,30,30,.14), transparent 60%);
+      pointer-events:none;
+      opacity:.45;
+    }
+    .card:before{ top:-60px; left:-60px; }
+    .card:after{ bottom:-70px; right:-70px; }
 
-  .sub{
-    margin-top: 10px;
-    color: var(--muted);
-    font-size: 15px;
-    line-height: 1.55;
-  }
+    .header{
+      padding: 24px 22px 18px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
 
-  .content{ padding: 20px 22px 24px; }
+    .kicker{
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
 
-  .grid{
-    display:grid;
-    grid-template-columns: 1.4fr .8fr .8fr;
-    gap: 14px;
-  }
+    h1{
+      margin:0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
 
-  @media (max-width: 720px){
-    .grid{ grid-template-columns: 1fr; }
-  }
+    .sub{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+      max-width: 70ch;
+    }
 
-  label{
-    display:block;
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+    .content{ padding: 20px 22px 24px; }
 
-  .select{
-    width:100%;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: #fff;
-    font-family: inherit;
-    font-size: 15px;
-  }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.4fr .8fr .8fr;
+      gap: 14px;
+    }
+    @media (max-width: 760px){
+      .grid{ grid-template-columns: 1fr; }
+    }
 
-  .select:focus{
-    outline:none;
-    border-color: var(--accent);
-  }
+    label{
+      display:block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 6px 0 6px;
+    }
 
-  .actions{
-    display:flex;
-    align-items:center;
-    gap: 12px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-  }
+    select{
+      width:100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text);
+    }
+    select:focus{
+      outline:none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(139,30,30,.12);
+    }
 
-  .btn{
-    padding: 10px 18px;
-    border-radius: 10px;
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: #fff;
-    font-family: inherit;
-    font-weight: 700;
-    cursor:pointer;
-  }
+    .actions{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
 
-  .btn.secondary{
-    background: #fff;
-    color: var(--accent);
-  }
+    button{
+      padding: 11px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      font-family: inherit;
+      font-weight: 700;
+      cursor:pointer;
+    }
+    button.secondary{
+      background: #fff;
+      color: var(--accent);
+    }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
 
-  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+    .status{
+      margin-left:auto;
+      font-size: 13px;
+      color: var(--muted);
+    }
 
-  .status{
-    margin-left:auto;
-    font-size: 13px;
-    color: var(--muted);
-  }
+    .result{
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
 
-  .result{
-    margin-top: 22px;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: #fffdf8;
-  }
+    .resultTop{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
 
-  .pct{
-    font-size: 40px;
-    font-weight: 700;
-    color: var(--accent);
-  }
+    .pct{
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.05;
+    }
 
-  .ref{
-    margin-top: 6px;
-    font-size: 15px;
-    color: var(--muted);
-  }
+    .ref{
+      color: var(--muted);
+      font-size: 15px;
+    }
 
-  .bar{
-    margin-top: 14px;
-    height: 10px;
-    background: var(--accent-soft);
-    border-radius: 999px;
-    overflow:hidden;
-  }
+    .bar{
+      margin-top: 14px;
+      height: 10px;
+      background: var(--accent-soft);
+      border-radius: 999px;
+      overflow:hidden;
+      border: 1px solid rgba(139,30,30,.18);
+    }
+    .bar > div{
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #8b1e1e, #b33a3a);
+      transition: width .25s ease;
+    }
 
-  .bar > div{
-    height:100%;
-    background: var(--accent);
-  }
+    .stats{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 760px){
+      .stats{ grid-template-columns: 1fr; }
+    }
 
-  .stats{
-    margin-top: 14px;
-    display:grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
+    .stat{
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--paper2);
+    }
+    .k{
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      letter-spacing: .02em;
+    }
+    .v{
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .mono{ font-family: "Courier New", ui-monospace, monospace; }
 
-  @media (max-width: 720px){
-    .stats{ grid-template-columns: 1fr; }
-  }
+    .note{
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+  </style>
+</head>
 
-  .stat{
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: #fff;
-  }
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div class="kicker">Authorized Version</div>
+        <h1>Bible Progress Calculator (KJV)</h1>
+        <div class="sub">
+          Select the <b>last verse completed</b>. Progress is measured by <b>word count</b> so longer chapters weigh more.
+        </div>
+      </div>
 
-  .k{
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
+      <div class="content">
+        <div class="grid">
+          <div>
+            <label for="book">Book</label>
+            <select id="book" disabled>
+              <option>Loading…</option>
+            </select>
+          </div>
 
-  .v{
-    font-size: 16px;
-    font-weight: 700;
-  }
+          <div>
+            <label for="chapter">Chapter</label>
+            <select id="chapter" disabled>
+              <option>Select a book</option>
+            </select>
+          </div>
 
-  .mono{
-    font-family: "Courier New", monospace;
-  }
-</style>
+          <div>
+            <label for="verse">Verse</label>
+            <select id="verse" disabled>
+              <option>Select a chapter</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="calc" disabled>Calculate</button>
+          <button id="reset" class="secondary" disabled>Reset</button>
+          <div class="status" id="status">Loading data…</div>
+        </div>
+
+        <div class="result" id="result" style="display:none;">
+          <div class="resultTop">
+            <div class="pct" id="percent">0.00%</div>
+            <div class="ref" id="detail"></div>
+          </div>
+
+          <div class="bar">
+            <div id="barFill"></div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Words read</div>
+              <div class="v mono" id="wordsRead">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Words remaining</div>
+              <div class="v mono" id="wordsLeft">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Total words (dataset)</div>
+              <div class="v mono" id="totalWords">0</div>
+            </div>
+          </div>
+
+          <div class="note">
+            Bracketed KJV words are included (matching most printed KJV Bibles).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const elBook = document.getElementById('book');
+    const elChapter = document.getElementById('chapter');
+    const elVerse = document.getElementById('verse');
+    const elCalc = document.getElementById('calc');
+    const elReset = document.getElementById('reset');
+    const elStatus = document.getElementById('status');
+
+    const elResult = document.getElementById('result');
+    const elPercent = document.getElementById('percent');
+    const elDetail = document.getElementById('detail');
+    const elTotalWords = document.getElementById('totalWords');
+    const elWordsRead = document.getElementById('wordsRead');
+    const elWordsLeft = document.getElementById('wordsLeft');
+    const elBarFill = document.getElementById('barFill');
+
+    let DATA = null;
+
+    function setStatus(msg){ elStatus.textContent = msg; }
+
+    function clearSelect(sel, placeholder){
+      sel.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = placeholder;
+      sel.appendChild(opt);
+      sel.value = '';
+    }
+
+    function fillSelect(sel, values, placeholder){
+      clearSelect(sel, placeholder);
+      for(const v of values){
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        sel.appendChild(opt);
+      }
+    }
+
+    function getBooks(){
+      return DATA._order || Object.keys(DATA).filter(k => !k.startsWith('_'));
+    }
+
+    function getChapters(book){
+      const b = DATA[book];
+      if(!b) return [];
+      return Object.keys(b).map(n=>parseInt(n,10)).sort((a,b)=>a-b).map(String);
+    }
+
+    function getVerses(book, chapter){
+      const c = DATA?.[book]?.[chapter];
+      if(!c) return [];
+      return Object.keys(c).map(n=>parseInt(n,10)).sort((a,b)=>a-b).map(String);
+    }
+
+    function computeWordsRead(targetBook, targetChapter, targetVerse){
+      const order = getBooks();
+      const total = DATA._meta?.totalWords || 0;
+
+      const targetBookIdx = order.indexOf(targetBook);
+      const targetCh = parseInt(targetChapter,10);
+      const targetV = parseInt(targetVerse,10);
+
+      let words = 0;
+
+      for(let bi=0; bi<order.length; bi++){
+        const book = order[bi];
+        const b = DATA[book];
+        if(!b) continue;
+
+        const chapters = Object.keys(b).map(x=>parseInt(x,10)).sort((a,b)=>a-b);
+        for(const chNum of chapters){
+          const chKey = String(chNum);
+          const versesObj = b[chKey];
+          const verses = Object.keys(versesObj).map(x=>parseInt(x,10)).sort((a,b)=>a-b);
+
+          for(const vNum of verses){
+            const vKey = String(vNum);
+
+            const beforeBook = bi < targetBookIdx;
+            const sameBook = bi === targetBookIdx;
+            const beforeChapter = sameBook && chNum < targetCh;
+            const sameChapter = sameBook && chNum === targetCh;
+            const beforeOrEqualVerse = sameChapter && vNum <= targetV;
+
+            if(beforeBook || beforeChapter || beforeOrEqualVerse){
+              words += (versesObj[vKey] || 0);
+            } else {
+              return { wordsRead: words, totalWords: total };
+            }
+          }
+        }
+        if(bi === targetBookIdx) break;
+      }
+
+      return { wordsRead: words, totalWords: total };
+    }
+
+    function disableInputs(){
+      elBook.disabled = true;
+      elChapter.disabled = true;
+      elVerse.disabled = true;
+      elCalc.disabled = true;
+      elReset.disabled = true;
+    }
+
+    function enableInputs(){
+      elBook.disabled = false;
+      elChapter.disabled = false;
+      elVerse.disabled = false;
+      elCalc.disabled = false;
+      elReset.disabled = false;
+    }
+
+    function resetUI(){
+      elResult.style.display = 'none';
+      clearSelect(elChapter, 'Select a book');
+      clearSelect(elVerse, 'Select a chapter');
+      elBook.value = '';
+      setStatus('Ready.');
+    }
+
+    function renderResult(book, chapter, verse){
+      const total = DATA._meta?.totalWords || 0;
+      if(!total){ setStatus('Data loaded, but total word count missing.'); return; }
+
+      const { wordsRead, totalWords } = computeWordsRead(book, chapter, verse);
+      const pct = (wordsRead / totalWords) * 100;
+      const left = Math.max(0, totalWords - wordsRead);
+
+      elPercent.textContent = pct.toFixed(2) + '%';
+      elDetail.textContent = `Up to ${book} ${chapter}:${verse}`;
+      elWordsRead.textContent = wordsRead.toLocaleString();
+      elWordsLeft.textContent = left.toLocaleString();
+      elTotalWords.textContent = totalWords.toLocaleString();
+      elBarFill.style.width = Math.min(100, Math.max(0, pct)).toFixed(2) + '%';
+
+      elResult.style.display = 'block';
+      setStatus('Calculated.');
+    }
+
+    async function init(){
+      disableInputs();
+      clearSelect(elBook, 'Loading…');
+      clearSelect(elChapter, 'Select a book');
+      clearSelect(elVerse, 'Select a chapter');
+
+      try{
+        setStatus('Loading…');
+        const res = await fetch('./kjv_word_counts.json', { cache: 'no-store' });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        DATA = await res.json();
+
+        fillSelect(elBook, getBooks(), 'Select a book');
+        clearSelect(elChapter, 'Select a book');
+        clearSelect(elVerse, 'Select a chapter');
+
+        enableInputs();
+        setStatus('Ready.');
+      }catch(err){
+        // Keep this message, but it only shows in the status line (not as a big “developer note” block)
+        setStatus('Could not load the data file. (' + err.message + ')');
+      }
+    }
+
+    elBook.addEventListener('change', () => {
+      elResult.style.display = 'none';
+      const book = elBook.value;
+      if(!book){
+        clearSelect(elChapter, 'Select a book');
+        clearSelect(elVerse, 'Select a chapter');
+        return;
+      }
+      fillSelect(elChapter, getChapters(book), 'Select a chapter');
+      clearSelect(elVerse, 'Select a chapter');
+    });
+
+    elChapter.addEventListener('change', () => {
+      elResult.style.display = 'none';
+      const book = elBook.value;
+      const chapter = elChapter.value;
+      if(!book || !chapter){
+        clearSelect(elVerse, 'Select a chapter');
+        return;
+      }
+      fillSelect(elVerse, getVerses(book, chapter), 'Select a verse');
+    });
+
+    elCalc.addEventListener('click', () => {
+      const book = elBook.value;
+      const chapter = elChapter.value;
+      const verse = elVerse.value;
+      if(!book || !chapter || !verse){
+        setStatus('Select a book, chapter, and verse.');
+        return;
+      }
+      renderResult(book, chapter, verse);
+    });
+
+    elReset.addEventListener('click', resetUI);
+
+    init();
+  </script>
+</body>
+</html>
+
 
 
 
