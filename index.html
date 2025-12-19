@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KJV Bible Reading Position</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #ffffff;
+      color: #111;
+      margin: 0;
+      padding: 32px 16px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+
+    button {
+      margin-top: 24px;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #000;
+    }
+
+    .result {
+      margin-top: 32px;
+      text-align: center;
+    }
+
+    .percent {
+      font-size: 42px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .subtext {
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>KJV Bible Reading Position</h1>
+
+    <label for="book">Book</label>
+    <select id="book"></select>
+
+    <label for="chapter">Chapter</label>
+    <select id="chapter"></select>
+
+    <button id="calculate">Calculate</button>
+
+    <div class="result" aria-live="polite" aria-atomic="true">
+      <div class="percent" id="output">—</div>
+      <div class="subtext">of the KJV Bible (Genesis–Revelation)</div>
+    </div>
+  </div>
+
+  <script>
+    // KJV 66-book canon with chapter counts
+    const books = [
+      ["Genesis",50],["Exodus",40],["Leviticus",27],["Numbers",36],["Deuteronomy",34],
+      ["Joshua",24],["Judges",21],["Ruth",4],["1 Samuel",31],["2 Samuel",24],
+      ["1 Kings",22],["2 Kings",25],["1 Chronicles",29],["2 Chronicles",36],
+      ["Ezra",10],["Nehemiah",13],["Esther",10],["Job",42],["Psalms",150],
+      ["Proverbs",31],["Ecclesiastes",12],["Song of Solomon",8],["Isaiah",66],
+      ["Jeremiah",52],["Lamentations",5],["Ezekiel",48],["Daniel",12],
+      ["Hosea",14],["Joel",3],["Amos",9],["Obadiah",1],["Jonah",4],["Micah",7],
+      ["Nahum",3],["Habakkuk",3],["Zephaniah",3],["Haggai",2],["Zechariah",14],
+      ["Malachi",4],
+      ["Matthew",28],["Mark",16],["Luke",24],["John",21],["Acts",28],
+      ["Romans",16],["1 Corinthians",16],["2 Corinthians",13],["Galatians",6],
+      ["Ephesians",6],["Philippians",4],["Colossians",4],["1 Thessalonians",5],
+      ["2 Thessalonians",3],["1 Timothy",6],["2 Timothy",4],["Titus",3],
+      ["Philemon",1],["Hebrews",13],["James",5],["1 Peter",5],["2 Peter",3],
+      ["1 John",5],["2 John",1],["3 John",1],["Jude",1],["Revelation",22]
+    ];
+
+    const TOTAL_CHAPTERS = 1189;
+
+    const bookSelect = document.getElementById("book");
+    const chapterSelect = document.getElementById("chapter");
+    const output = document.getElementById("output");
+
+    function populateBooks() {
+      books.forEach((book, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = book[0];
+        bookSelect.appendChild(option);
+      });
+    }
+
+    function populateChapters(bookIndex) {
+      chapterSelect.innerHTML = "";
+      const count = books[bookIndex][1];
+      for (let i = 1; i <= count; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+        chapterSelect.appendChild(option);
+      }
+    }
+
+    function calculatePercentage() {
+      const bookIndex = Number(bookSelect.value);
+      const chapter = Number(chapterSelect.value);
+
+      const chaptersBefore = books
+        .slice(0, bookIndex)
+        .reduce((sum, book) => sum + book[1], 0);
+
+      const completed = chaptersBefore + chapter;
+      const percent = (completed / TOTAL_CHAPTERS) * 100;
+
+      output.textContent = percent.toFixed(1) + "%";
+    }
+
+    populateBooks();
+    populateChapters(0);
+
+    bookSelect.addEventListener("change", () => {
+      populateChapters(bookSelect.value);
+    });
+
+    document
+      .getElementById("calculate")
+      .addEventListener("click", calculatePercentage);
+  </script>
+</body>
+</html>
